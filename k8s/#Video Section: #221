@@ -1,0 +1,35 @@
+#Video Section: #221
+
+We are saying that KB we need 1 gb of storage that's what the PVC is doing. Kubernetes will req our system to get a slice from 
+the hard drive. That's going to be the persistent volume  & that persisyent volume gets handed back to our pod.
+
+cmd: kubectl get storageclass
+
+The above cmd shows the possible options on our computer that kubernetes have for creating the
+the persistent volume.
+
+We have only single option called "standard" & it's the default option. So if we do not specify the storage class
+with our persistent volume claim the std opt will be used by default.
+
+How the "KB" is going to decide "how to create this PV" is by using the "minikube host path" option.
+
+"KB host path" means that when we ask KB to create this persistent volume, it will look on the host machine
+and will make the little space on our personal hard drive.
+
+On production Case:
+ If we are hoisting an application on Google Cloud, the GC service called persistent disk is going to use to store inf 
+ with our PV.
+
+ Summarize:
+
+ When we ask KB for small amount of storage on our local machine it just gonna take the slice of oue HD.
+
+# Designating a PVC in a POD Template.
+
+We will update the template section &  so that when the pod gets created it needs to requst some type of long term storage.
+Config Explained:
+  volumes > name of the postgres storage  // To get the access to the  storage.
+  prsistentVolumeClaim > name of the claim that we mentioned in "db-per-vol-claim.yaml" file.
+  The property "claimName" will gonna tell the KB to go to the local harddrive (local env).
+
+  Now I need to configure to the container part that how to use that allocated space
