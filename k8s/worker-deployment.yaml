@@ -1,4 +1,4 @@
-apiVersion: app/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: worker-deployment
@@ -12,7 +12,7 @@ spec:
       labels:
         component: worker
     spec:
-      conatainers:
+      containers:
         - name: worker
           image: stephengrider/multi-worker
           
