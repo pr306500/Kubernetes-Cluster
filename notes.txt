@@ -1,0 +1,55 @@
+[Ingress-Nginx on GC] - KC setup on GC Diagram - [#234 0:37] 
+
+We gonna make the "ingres config" or "set up the routing rules", we will feed into the "kubectl" 
+then the "ingress-nginx" will create "single deployment" whose job is to both read and create 
+a pod that meets all the routing rules.
+
+The "Ingres Config" is going to be fed into a "deployment" that is running both our "controller and
+nginx pod".The nginx pod is going to take the incoming traffic & route it to the appropiate location.
+
+/*
+  Ingres Config ==[fed]==> Deployment - [Controller + Nginx Pod]
+*/
+
+Note: When we make "Ingres on Google cloud" we'r going to get a Google Cloud Load Balancer [#234: 1:19]
+created for us to get the traffic into our cluster.
+
+Once the "GC load balancer" is in effect inside the cluster itself the deployment that gets created is going to get a
+"load balancer service" attached to it. 
+
+Behind the scenes on GC the LB service is still being used. The "incoming traffic" will come to the "GC LB" that LB
+is going to send that traffic to "LB service inside the cluster" which will eventually get the traffic into the "nginx 
+pod" that gets created by our ingres controller.
+
+/*
+[ Incoming traffic > GCLB > LB service inside the cluster >> 
+  nginx pod (created by nginx controller) >> send traffic to Appropiate Service ]
+*/
+
+It's the upto the nginx pod to eventually send that traffic off to the appropiate service inside of our application.
+There is going to be another deployment set up inside of our cluster something called "default backend". It will be used for the
+series of health check up to essentially make sure that our cluster is working the way it should be working.
+
+The nginx inside the ingress-nginx do not send it to the cluster IP service & allowing the cluster IP to load balance 
+that req off to some random pod rather it directly route the req to directly one of these diff pod. This approach helps in 
+the sticky session that if one user sends 2 req to our app we want that both those requests go to the exact same server.
+
+***********************Ingress Service******************
+
+Annotations are essentially "additional configuration option" that are going to specify the little bit 
+kind of "higher level configuration" around the Ingress object that it gets created.
+
+"kubernetes.io/ingress.class: nginx" : We want to create the 'Ingress Controller' based on the nginx project.
+ We are going to add another configuration rules that's going to specifically configure how our copy of nginx behave.
+
+ "nginx.ingress.kubernetes.io/rewrite-target: /" - This rule in particular says that if we end up matching a route like slash '/api',
+ after redirecting to server that configuration will do a little bit of a rewrite on the req & essentially it's going to remove 
+ the '/api' part.
+
+ If someone ever comes to the path of just / byitself then we want to send req to whatever set of pods are governed
+ by the service of client cluster IP service.
+
+ Then the req came in with the leading route  name of  API we want it to instead send it to the set of pods that are managed
+ by the server cluster IP service. 
+
+ 
