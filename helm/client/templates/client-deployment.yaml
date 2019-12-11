@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: "{{ .Release.Name }}-client"
+    chart: "{{ .Chart.Name}}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    revision: "{{ .Release.Revision }}"
+  name: "{{ .Release.Name }}-client"
+spec:
+  replicas: {{ .Values.replicaCount | default 3 }} 
+  selector:
+    matchLabels:
+      component: "{{ .Release.Name }}-client"
+  template:
+    metadata:
+      labels:
+        component: "{{ .Release.Name }}-client"
+    spec:
+      {{- if .Values.image.pullSecret }}
+            imagePullSecrets:
+             - name: "{{ .Values.image.pullSecret }}"
+      {{- end}}
+      containers:
+        - name: client
+          image: {{ .Values.image.repository}}
+          ports:
+            - containerPort: 3000

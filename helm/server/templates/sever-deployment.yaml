@@ -1,0 +1,46 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  labels:
+    run: "{{ .Release.Name }}-server"
+    chart: "{{ .Chart.Name}}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    revision: "{{ .Release.Revision }}"
+  name: "{{ .Release.Name }}-server"
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      component: "{{ .Release.Name }}-server"
+  template:
+    metadata:
+      labels: 
+        component: "{{ .Release.Name }}-server"
+    spec:
+      {{- if .Values.image.pullSecret }}
+            imagePullSecrets:
+             - name: "{{ .Values.image.pullSecret }}"
+      {{- end}}
+      containers:
+        - name: server
+          image: {{ .Values.image.repository}}
+          ports: 
+            - containerPort: 5000
+          env:
+           - name: REDIS_HOST
+             value: redis-client-ip-service
+           - name: REDIS_PORT
+             value: "6379"
+           - name: PGUSER
+             value: postgres
+           - name: PGHOST
+             value: postgres-cluster-ip-service
+           - name: PGPORT
+             value: "5432"
+           - name: PGDATABASE
+             value: postgres
+           - name: PGPASSWORD
+             valueFrom:
+               secretKeyRef:
+                 name: pgpassword
+                 key: PGPASSWORD
